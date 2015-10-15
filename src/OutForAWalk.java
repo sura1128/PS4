@@ -17,29 +17,28 @@ class OutForAWalk {
 													// stored here too
 
 	private boolean visited[];
-	private Vector<Vector<IntegerPair>> DFSAdjList;
-	private int[][] mat;
-
+	private Vector<Vector<IntegerPair>> MST;
+	
+	private int[][] primMatrix;
 	private int[][] maxWeights;
 
 	public OutForAWalk() {
-		DFSAdjList = new Vector<Vector<IntegerPair>>();
-
+		MST = new Vector<Vector<IntegerPair>>();
 	}
 
 	void PreProcess() {
 
 		if (V < 10) {
 			for (int i = 0; i < 10; i++) {
-				DFSAdjList.add(i, new Vector<IntegerPair>());
+				MST.add(i, new Vector<IntegerPair>());
 			} 
 		} else {
 			for (int i = 0; i < V; i++) {
-				DFSAdjList.add(i, new Vector<IntegerPair>());
+				MST.add(i, new Vector<IntegerPair>());
 			} 
 		}
 
-		mat = new int[V][V];
+		primMatrix = new int[V][V];
 
 		Prim(0);
 
@@ -92,11 +91,11 @@ class OutForAWalk {
 
 				T[u.third()] = true;
 
-				if (mat[u.third()][u.second()] == 0) {
-					DFSAdjList.get(u.third()).add(new IntegerPair(u.second(), u.first()));
-					DFSAdjList.get(u.second()).add(new IntegerPair(u.third(), u.first()));
-					mat[u.third()][u.second()] = u.first();
-					mat[u.second()][u.third()] = u.first();
+				if (primMatrix[u.third()][u.second()] == 0) {
+					MST.get(u.third()).add(new IntegerPair(u.second(), u.first()));
+					MST.get(u.second()).add(new IntegerPair(u.third(), u.first()));
+					primMatrix[u.third()][u.second()] = u.first();
+					primMatrix[u.second()][u.third()] = u.first();
 
 				}
 
@@ -111,7 +110,7 @@ class OutForAWalk {
 
 		visited[u] = true;
 
-		Vector<IntegerPair> neighbours = DFSAdjList.get(u);
+		Vector<IntegerPair> neighbours = MST.get(u);
 
 		for (int i = 0; i < neighbours.size(); i++) {
 			int x = neighbours.get(i).first();
