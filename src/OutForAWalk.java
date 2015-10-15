@@ -15,65 +15,120 @@ class OutForAWalk {
 													// building), effort rating
 													// of each corridor is
 													// stored here too
-	private List<Integer> weightList;
+
+	private boolean visited[];
+	private Vector<Vector<IntegerPair>> DFSAdjList;
+	private int[][] mat;
+
+	private int[][] maxWeights;
 
 	public OutForAWalk() {
-		weightList = new ArrayList<Integer>();
+		DFSAdjList = new Vector<Vector<IntegerPair>>();
+
 	}
 
 	void PreProcess() {
+
+		if (V < 10) {
+			for (int i = 0; i < 10; i++) {
+				DFSAdjList.add(i, new Vector<IntegerPair>());
+			} 
+		} else {
+			for (int i = 0; i < V; i++) {
+				DFSAdjList.add(i, new Vector<IntegerPair>());
+			} 
+		}
+
+		mat = new int[V][V];
+
+		Prim(0);
+
+		maxWeights = new int[10][V];
+
+		for (int i = 0; i < 10; i++) {
+			if (V > 10) {
+				visited = new boolean[V];
+			} else {
+				visited = new boolean[10];
+			}
+			DFS(i, i, 0);
+
+		}
 
 	}
 
 	int Query(int source, int destination) {
 		int ans = 0;
 
-		Prim(source, destination);
-
-		Collections.sort(weightList);
-		if (!weightList.isEmpty()) {
-			ans = weightList.get(weightList.size() - 1);
-		}
-
-		weightList.clear();
+		ans = maxWeights[source][destination];
 
 		return ans;
 	}
 
-	void Prim(int source, int destination) {
-		
-		boolean T[] = new boolean[V];
-		
-		T[source] = true; // visited vector
-		Vector<IntegerPair> temp = AdjList.get(source);
+	void Prim(int source) {
 
-		PriorityQueue<IntegerPair> pq = new PriorityQueue<IntegerPair>();
+		boolean T[] = new boolean[V]; // visited vector
+		// T[source] = true;
 
-		for (int i = 0; i < temp.size(); i++) { // populate PQ with edges of
-			pq.add(temp.get(i));
+		Vector<IntegerPair> neighbours = AdjList.get(source);
+		PriorityQueue<IntegerTriple> pq = new PriorityQueue<IntegerTriple>();
+
+		for (int i = 0; i < neighbours.size(); i++) {
+			pq.add(new IntegerTriple(neighbours.get(i).second(), source, neighbours.get(i).first()));
 		}
 
 		while (!pq.isEmpty()) {
-			IntegerPair u = pq.remove();
-			if (T[u.first()] == false) {
-				T[u.first()] = true;
-				weightList.add(u.second());
-				
-				List<IntegerPair> neighbours = AdjList.get(u.first()); 
-				for (int i = 0; i < AdjList.get(u.first()).size(); i++) {					
+
+			IntegerTriple u = pq.remove();
+
+			if (T[u.third()] == false) {
+				neighbours = AdjList.get(u.third());
+
+				for (int i = 0; i < neighbours.size(); i++) {
 					if (T[neighbours.get(i).first()] == false) {
-						pq.add(neighbours.get(i));
+						pq.add(new IntegerTriple(neighbours.get(i).second(), u.third(), neighbours.get(i).first()));
 					}
+				}
+
+				T[u.third()] = true;
+
+				if (mat[u.third()][u.second()] == 0) {
+					DFSAdjList.get(u.third()).add(new IntegerPair(u.second(), u.first()));
+					DFSAdjList.get(u.second()).add(new IntegerPair(u.third(), u.first()));
+					mat[u.third()][u.second()] = u.first();
+					mat[u.second()][u.third()] = u.first();
 
 				}
+
 			}
-			if (u.first() == destination)
-				break;
 
 		}
 
 	}
 
+
+	void DFS(int source, int u, int max) {
+
+		visited[u] = true;
+
+		Vector<IntegerPair> neighbours = DFSAdjList.get(u);
+
+		for (int i = 0; i < neighbours.size(); i++) {
+			int x = neighbours.get(i).first();
+			int w = neighbours.get(i).second();
+			int tempMax = max;
+
+			if (visited[x] == false) {
+				if (w > tempMax) {
+					tempMax = w;
+				}
+				maxWeights[source][x] = tempMax;
+				DFS(source, x, tempMax);
+			}
+
+		}
+
+	}
 
 	void run() throws Exception {
 		// do not alter this method
@@ -183,4 +238,35 @@ class IntegerPair implements Comparable<IntegerPair> {
 		return _second;
 	}
 
+}
+
+class IntegerTriple implements Comparable<IntegerTriple> {
+	Integer _first, _second, _third;
+
+	public IntegerTriple(Integer f, Integer s, Integer t) {
+		_first = f;
+		_second = s;
+		_third = t;
+	}
+
+	public int compareTo(IntegerTriple o) {
+		if (!this.first().equals(o.first()))
+			return this.first() - o.first();
+		else if (!this.second().equals(o.second()))
+			return this.second() - o.second();
+		else
+			return this.third() - o.third();
+	}
+
+	Integer first() {
+		return _first;
+	}
+
+	Integer second() {
+		return _second;
+	}
+
+	Integer third() {
+		return _third;
+	}
 }
